@@ -5,18 +5,23 @@ import MovieList from '../components/MovieList';
 class HomePage extends Component {
   state = {
     movies: [],
+    error: null,
   };
   async componentDidMount() {
-    const trendingMovies = await fetchTrendingMovies();
-    this.setState({ movies: trendingMovies });
-    console.log(trendingMovies);
+    try {
+      const trendingMovies = await fetchTrendingMovies();
+      this.setState({ movies: trendingMovies });
+    } catch (err) {
+      this.setState({ error: err.message });
+    }
   }
 
   render() {
-    const { movies } = this.state;
+    const { movies, error } = this.state;
     return (
       <>
         <h1>Trending today</h1>
+        {error && <h3 className="Error">{error}</h3>}
         <MovieList movies={movies} />
       </>
     );

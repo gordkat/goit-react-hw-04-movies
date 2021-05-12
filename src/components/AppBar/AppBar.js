@@ -1,6 +1,6 @@
 import Navigation from '../Navigation';
 const AppBar = () => (
-  <header>
+  <header className="Header">
     <Navigation />
   </header>
 );

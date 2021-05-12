@@ -7,6 +7,10 @@ const HomePage = lazy(() =>
   import('./views/HomePage.js' /* webpackChunkName: "home-page" */),
 );
 
+const MoviesPage = lazy(() =>
+  import('./views/MoviesPage.js' /* webpackChunkName: "movies-page" */),
+);
+
 const MovieDetailsPage = lazy(
   () =>
     import(
@@ -21,6 +25,8 @@ const App = () => (
       <Switch>
         <Route exact path={routes.home} component={HomePage} />
         <Route path={routes.movieDetails} component={MovieDetailsPage} />
+        <Route path={routes.movies} component={MoviesPage} />
+        <Route component={HomePage} />
       </Switch>
     </Suspense>
   </>

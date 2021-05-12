@@ -2,11 +2,18 @@ import { NavLink } from 'react-router-dom';
 import routes from '../../routes';
 
 const Navigation = () => (
-  <nav>
-    <NavLink exact to={routes.home}>
+  <nav className="Navigation">
+    <NavLink
+      exact
+      to={routes.home}
+      className="Home"
+      activeClassName="ActiveLinkNav"
+    >
       Home
     </NavLink>
-    <NavLink to={routes.movies}>Movies</NavLink>
+    <NavLink to={routes.movies} activeClassName="ActiveLinkNav">
+      Movies
+    </NavLink>
   </nav>
 );
 export default Navigation;

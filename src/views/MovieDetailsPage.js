@@ -1,8 +1,16 @@
 import { Component } from 'react';
+import React, { lazy, Suspense } from 'react';
 import { fetchMovieDetails } from '../services/movieApi';
-import { NavLink, Route } from 'react-router-dom';
-import Cast from '../components/Cast';
-import Reviews from '../components/Reviews';
+import { Route, Switch } from 'react-router-dom';
+import routes from '../routes';
+import MovieCard from '../components/MovieCard';
+
+const Cast = lazy(() =>
+  import('../components/Cast' /* webpackChunkName: "cast" */),
+);
+const Reviews = lazy(() =>
+  import('../components/Reviews' /* webpackChunkName: "reviews" */),
+);
 
 class MovieDetailsPage extends Component {
   state = {
@@ -12,13 +20,38 @@ class MovieDetailsPage extends Component {
     vote_average: null,
     overview: null,
     genres: null,
+    error: null,
   };
 
   async componentDidMount() {
     const id = this.props.match.params.movieId;
-    const movieDetails = await fetchMovieDetails(id);
-    this.setState({ ...movieDetails });
+    try {
+      const movieDetails = await fetchMovieDetails(id);
+      const {
+        poster_path,
+        release_date,
+        title,
+        vote_average,
+        overview,
+        genres,
+      } = movieDetails;
+      this.setState({
+        poster_path,
+        release_date,
+        title,
+        vote_average,
+        overview,
+        genres,
+      });
+    } catch (err) {
+      this.setState({ error: err.message });
+    }
   }
+
+  handleGoBack = () => {
+    const { location, history } = this.props;
+    history.push(location?.state?.from || routes.home);
+  };
 
   render() {
     const {
@@ -28,44 +61,30 @@ class MovieDetailsPage extends Component {
       vote_average,
       overview,
       genres,
+      error,
     } = this.state;
     const { match } = this.props;
-
-    const genresUpdated = genres?.map(genre => genre.name).join(' ') || null;
-    const urlImgUpdated = poster_path
-      ? `https://image.tmdb.org/t/p/w500${poster_path}`
-      : null;
-    const yearRelease = release_date ? release_date.split('-')[0] : null;
-    const userScore = vote_average ? vote_average * 10 : null;
-
     return (
-      <>
-        <div>
-          <button type="button">Вернуться назад</button>
-          <img src={urlImgUpdated} alt={title} />
-          <h2>
-            {title} ({yearRelease})
-          </h2>
-          <p>User score {userScore}%</p>
-          <h3>Overview</h3>
-          <p>{overview}</p>
-          <h3>Genres</h3>
-          <p>{genresUpdated}</p>
-        </div>
-        <div>
-          <p>Additional information</p>
-          <ul>
-            <li>
-              <NavLink to={`${match.url}/cast`}>Cast</NavLink>
-            </li>
-            <li>
-              <NavLink to={`${match.url}/reviews`}>Reviews</NavLink>
-            </li>
-          </ul>
-        </div>
-        <Route path={`${match.path}/cast`} component={Cast} />
-        <Route path={`${match.path}/reviews`} component={Reviews} />
-      </>
+      <main className="MainDetailsPage">
+        <button type="button" onClick={this.handleGoBack}>
+          Go back
+        </button>
+        {error && <h3 className="Error">{error}</h3>}
+        <MovieCard
+          poster_path={poster_path}
+          release_date={release_date}
+          title={title}
+          vote_average={vote_average}
+          overview={overview}
+          genres={genres}
+        />
+        <Suspense fallback={<h1>loading...</h1>}>
+          <Switch>
+            <Route path={`${match.path}/cast`} component={Cast} />
+            <Route path={`${match.path}/reviews`} component={Reviews} />
+          </Switch>
+        </Suspense>
+      </main>
     );
   }
 }
